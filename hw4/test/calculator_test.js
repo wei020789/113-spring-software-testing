@@ -53,6 +53,39 @@ describe('Calculator.main', () => {
         assert.throws(() => Calculator.main(5, 20, 5, 10, 2024), /day1 must be less than day2 if month1 is equal to month2/);
     });
 
+    // === Killing Mutants: Boundary value tests ===
+    it('should NOT throw error for month1 = 12', () => {
+        // Kills mutant: month1 >= 12
+        assert.doesNotThrow(() => Calculator.main(1, 1, 12, 1, 2024));
+    });
+
+    it('should NOT throw error for month2 = 1', () => {
+        // Kills mutant: month2 <= 1
+        assert.doesNotThrow(() => Calculator.main(1, 1, 1, 10, 2024));
+    });
+
+    it('should NOT throw error for day2 = 31', () => {
+        // Kills mutant: day2 >= 31
+        assert.doesNotThrow(() => Calculator.main(1, 1, 1, 31, 2024));
+    });
+    
+    it('should NOT throw error for year = 1', () => {
+        // Kills mutant: year <= 1
+        assert.doesNotThrow(() => Calculator.main(1, 1, 2, 1, 1));
+    });
+
+    it('should NOT throw error for year = 10000', () => {
+        // Kills mutant: year >= 10000
+        assert.doesNotThrow(() => Calculator.main(1, 1, 2, 1, 10000));
+    });
+
+    it('should compute 0 days for same start and end date', () => {
+        // Kills mutant: day1 >= day2
+        const days = Calculator.main(5, 10, 5, 10, 2024);
+        assert.strictEqual(days, 0);
+    });
+
+
     // === Normal computation ===
     it('should compute correct days for same month', () => {
         const days = Calculator.main(5, 10, 5, 20, 2024); // May 10 - May 20
@@ -60,18 +93,18 @@ describe('Calculator.main', () => {
     });
 
     it('should compute correct days for adjacent months (non-leap year)', () => {
-        const days = Calculator.main(1, 31, 2, 5, 2023); // Jan 31 to Feb 5, 2023 (not leap year)
-        assert.strictEqual(days, 5); // Jan 31 to Feb 5
+        const days = Calculator.main(1, 31, 2, 5, 2023); // Jan 31 to Feb 5, 2023
+        assert.strictEqual(days, 5);
     });
 
     it('should compute correct days across multiple months (non-leap year)', () => {
         const days = Calculator.main(1, 15, 3, 5, 2023);
-        assert.strictEqual(days, 49); // 16 (Jan) + 28 (Feb) + 5 = 49
+        assert.strictEqual(days, 49); // 16 (Jan) + 28 (Feb) + 5 (Mar) = 49
     });
 
     it('should compute correct days across multiple months (leap year)', () => {
         const days = Calculator.main(1, 15, 3, 5, 2024);
-        assert.strictEqual(days, 50); // 16 (Jan) + 29 (Feb leap) + 5 = 50
+        assert.strictEqual(days, 50); // 16 (Jan) + 29 (Feb leap) + 5 (Mar) = 50
     });
 
     it('should compute correct days for Feb in leap year', () => {
@@ -86,7 +119,23 @@ describe('Calculator.main', () => {
 
     it('should compute correct days across months with 30 and 31 days', () => {
         const days = Calculator.main(4, 25, 6, 5, 2023); // Apr 25 to Jun 5
-        // (5 days in Apr) + 31 (May) + 5 (Jun)
-        assert.strictEqual(days, 41);
+        assert.strictEqual(days, 41); // 5 (Apr) + 31 (May) + 5 (Jun)
+    });
+
+    // === Killing Mutants: Leap year logic ===
+    it('should correctly handle a year divisible by 100 but not by 400 (e.g., 1900 is not a leap year)', () => {
+        // Kills mutants in #isLeapYear that ignore the "year % 100 !== 0" rule.
+        // Feb 1900 has 28 days.
+        const days = Calculator.main(2, 1, 3, 1, 1900);
+        // 27 days in Feb + 1 day in Mar
+        assert.strictEqual(days, 28);
+    });
+
+    it('should correctly handle a year divisible by 400 (e.g., 2000 is a leap year)', () => {
+        // Kills mutants in #isLeapYear that ignore the "year % 400 === 0" rule.
+        // Feb 2000 has 29 days.
+        const days = Calculator.main(2, 1, 3, 1, 2000);
+        // 28 days in Feb + 1 day in Mar
+        assert.strictEqual(days, 29);
     });
 });
