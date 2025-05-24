@@ -54,28 +54,28 @@ describe('Calculator.main', () => {
     });
 
     // === Killing Mutants: Boundary value tests ===
-    it('should NOT throw error for month1 = 12', () => {
-        // Kills mutant: month1 >= 12
-        assert.doesNotThrow(() => Calculator.main(1, 1, 12, 1, 2024));
+    it('should NOT throw error for month1 = 12 (to kill the last mutant)', () => {
+        // Kills mutant: if (month1 < 1 || month1 >= 12)
+        assert.doesNotThrow(() => Calculator.main(12, 1, 12, 10, 2024));
     });
 
     it('should NOT throw error for month2 = 1', () => {
-        // Kills mutant: month2 <= 1
         assert.doesNotThrow(() => Calculator.main(1, 1, 1, 10, 2024));
+    });
+    
+    it('should NOT throw error for month2 = 12', () => {
+        assert.doesNotThrow(() => Calculator.main(1, 1, 12, 1, 2024));
     });
 
     it('should NOT throw error for day2 = 31', () => {
-        // Kills mutant: day2 >= 31
         assert.doesNotThrow(() => Calculator.main(1, 1, 1, 31, 2024));
     });
     
     it('should NOT throw error for year = 1', () => {
-        // Kills mutant: year <= 1
         assert.doesNotThrow(() => Calculator.main(1, 1, 2, 1, 1));
     });
 
     it('should NOT throw error for year = 10000', () => {
-        // Kills mutant: year >= 10000
         assert.doesNotThrow(() => Calculator.main(1, 1, 2, 1, 10000));
     });
 
@@ -125,17 +125,13 @@ describe('Calculator.main', () => {
     // === Killing Mutants: Leap year logic ===
     it('should correctly handle a year divisible by 100 but not by 400 (e.g., 1900 is not a leap year)', () => {
         // Kills mutants in #isLeapYear that ignore the "year % 100 !== 0" rule.
-        // Feb 1900 has 28 days.
         const days = Calculator.main(2, 1, 3, 1, 1900);
-        // 27 days in Feb + 1 day in Mar
         assert.strictEqual(days, 28);
     });
 
     it('should correctly handle a year divisible by 400 (e.g., 2000 is a leap year)', () => {
         // Kills mutants in #isLeapYear that ignore the "year % 400 === 0" rule.
-        // Feb 2000 has 29 days.
         const days = Calculator.main(2, 1, 3, 1, 2000);
-        // 28 days in Feb + 1 day in Mar
         assert.strictEqual(days, 29);
     });
 });
